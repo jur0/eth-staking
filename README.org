@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 12:49]
+#+LAST_MODIFIED: [2020-12-19 Sat 12:52]
 
 * Introduction
 
@@ -79,7 +79,7 @@ Wireless and bluetooth interfaces are disabled in BIOS. There are only
 
 =enp2s0f0= is configured to use DHCP, =/etc/systemd/network/wired.netword=:
 
-#+begin_src toml
+#+begin_src systemd
 [Match]
 Name=enp2s0f0
 
