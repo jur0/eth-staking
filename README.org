@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 12:34]
+#+LAST_MODIFIED: [2020-12-19 Sat 12:42]
 
 * Introduction
 
@@ -348,7 +348,7 @@ ListenAddr = ":30303"
 
 =/usr/lib/systemd/system/geth-mainnet.service=:
 
-#+begin_src toml
+#+begin_src systemd
 [Unit]
 Description=Mainnet geth client
 Requires=network.target
@@ -424,7 +424,7 @@ accept-terms-of-use: true
 
 =/usr/lib/systemd/system/prysm-beacon-mainnet.service=:
 
-#+begin_src toml
+#+begin_src systemd
 [Unit]
 Description=Mainnet beacon chain prysm client
 Requires=network.target
@@ -513,7 +513,7 @@ accept-terms-of-use: true
 
 =/usr/lib/systemd/system/prysm-validator-mainnet.service=:
 
-#+begin_src toml
+#+begin_src systemd
 [Unit]
 Description=Mainnet validator prysm client
 Requires=prysm-beacon-mainnet.service
@@ -621,7 +621,7 @@ metrics:
 Add the following systemd config into
 =/usr/lib/systemd/system/prometheus-json-exporter.service=:
 
-#+begin_src toml
+#+begin_src systemd
 [Unit]
 Description=Prometheus JSON Exporter
 Requires=network-online.target
