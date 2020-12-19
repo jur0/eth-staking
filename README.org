@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 12:42]
+#+LAST_MODIFIED: [2020-12-19 Sat 12:49]
 
 * Introduction
 
@@ -45,7 +45,7 @@ Follow [[https://wiki.archlinux.org/index.php/Installation_guide][the installati
 
 =/etc/fstab=:
 
-#+begin_comment
+#+begin_example
 # /dev/nvme0n1p2 UUID=c9e84601-3828-4133-9820-f939c6fe8289
 /dev/nvme0n1p2      	/         	ext4      	rw,relatime	0 1
 
@@ -54,7 +54,7 @@ Follow [[https://wiki.archlinux.org/index.php/Installation_guide][the installati
 
 # /dev/nvme0n1p3 UUID=35b11765-d2e8-4147-8651-8adbbcb40992
 /dev/nvme0n1p3      	/home     	ext4      	rw,relatime	0 2
-#+end_comment
+#+end_example
 
 All partitions are mounted during the installation (in =/mnt=).
 
@@ -91,13 +91,13 @@ DHCP=yes
 
 Check for any errors/warnings with ~journalctl -kx~:
 
-#+begin_comment
+#+begin_example
 Dec 13 08:52:15 asus kernel: GPT:Primary header thinks Alt. header is not at the end of the disk.
 Dec 13 08:52:15 asus kernel: GPT:1397399 != 7827391
 Dec 13 08:52:15 asus kernel: GPT:Alternate GPT header not at the end of the disk.
 Dec 13 08:52:15 asus kernel: GPT:1397399 != 7827391
 Dec 13 08:52:15 asus kernel: GPT: Use GNU Parted to correct GPT errors.
-#+end_comment
+#+end_example
 
 The above error can be fixed with =gdisk=, enable expert options and
 select =j= command.
@@ -108,7 +108,7 @@ Make sure RAM memory runs on the right frequency (there are some issues
 reported with RAM running at lower frequency). Use ~dmidecode -t memory~
 or ~lshw -short -C memory~:
 
-#+begin_comment
+#+begin_example
 H/W path            Device          Class          Description
 ==============================================================
 /0/0                                memory         64KiB BIOS
@@ -118,7 +118,7 @@ H/W path            Device          Class          Description
 /0/32                               memory         512KiB L1 cache
 /0/33                               memory         4MiB L2 cache
 /0/34                               memory         8MiB L3 cache
-#+end_comment
+#+end_example
 
 ** Time service
 
@@ -163,7 +163,7 @@ systemctl enable systemd-resolved
 
 Amend the =/etc/ssh/sshd_config= based on [[https://stribika.github.io/2015/01/04/secure-secure-shell.html][this guide]]:
 
-#+begin_comment
+#+begin_example
 Port 22000
 AddressFamily any
 ListenAddress 0.0.0.0
@@ -275,7 +275,7 @@ Subsystem	sftp	/usr/lib/ssh/sftp-server
 #	AllowTcpForwarding no
 #	PermitTTY no
 #	ForceCommand cvs server
-#+end_comment
+#+end_example
 
 The =staker= user is allowed to connect to the SSH server using public key
 authentication. Therefore, the SSH public key of this user must be
