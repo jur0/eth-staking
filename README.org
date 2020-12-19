@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 13:00]
+#+LAST_MODIFIED: [2020-12-19 Sat 19:59]
 
 * Introduction
 
@@ -494,7 +494,49 @@ NOTE: The above commands don't install the validator, but when the
 
 ** Validator keys
 
-TODO
+In order to generate validator keys:
+
+1. download [[https://github.com/ethereum/eth2.0-deposit-cli/releases/][eth2.0-deposit-cli]] make sure the SHA256 checksum matches:
+
+#+begin_src shell
+sha256sum eth2deposit-cli-ed5a6d3-PLATFORM-amd64.tar.gz
+#+end_src
+
+2. decompress the file:
+
+#+begin_src shell
+tar -xvzf eth2deposit-cli-ed5a6d3-PLATFORM-amd64.tar.gz
+#+end_src
+
+3. generate validator keys:
+
+#+begin_src shell
+./deposit new-mnemonic --num_validators 2 --chain mainnet
+#+end_src
+
+The above command generated =validator-keys= directory, which has:
+- =deposit_data-*.json= file;
+- =keystore-m_*.json= file for each validator.
+
+4. import the generated keys into Prysm wallet (password used to
+   generate validator keys in the previous step is needed):
+
+#+begin_src shell
+./prysm-bin/prysm.sh validator accounts import --keys-dir=path/to/validator_keys
+#+end_src
+
+Set the wallet's path to be =/home/validator/mainnnet/prysm-wallet=. The
+wallet has its own password.
+
+It's also possible to import additional keys:
+
+#+begin_src shell
+./prysm-bin/prysm.sh validator accounts import --keys-dir=path/to/validator_keys --wallet-dir=prysm-wallet
+#+end_src
+
+5. Go to [[https://launchpad.ethereum.org/][ETH2 launch pad]] and upload the =deposit_data-*.json= file that
+   will generate transactions in Metamask (one transaction per stake)
+   for Ethereum deposit contract.
 
 ** Configuration
 
