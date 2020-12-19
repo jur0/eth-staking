@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 12:52]
+#+LAST_MODIFIED: [2020-12-19 Sat 12:56]
 
 * Introduction
 
@@ -15,9 +15,9 @@ The server is connected to a router (with proprietary SW).
 
 ** Server
 
-Asus PN50 r8 4800U
-32GB DDR4 memory (2x16)
-2TB NVMe M.2 Samsung 970 EVO Plus SSD
+- Asus PN50 r8 4800U
+- 32GB DDR4 memory (2x16)
+- 2TB NVMe M.2 Samsung 970 EVO Plus SSD
 
 In order to update BIOS follow [[https://www.youtube.com/watch?v=D12VP44eyQo][this video]].
 
