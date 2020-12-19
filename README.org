@@ -1,12 +1,12 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 12:56]
+#+LAST_MODIFIED: [2020-12-19 Sat 13:00]
 
 * Introduction
 
 Steps to install and configure Arch Linux server running Geth, Ethereum
-2.0 beacon chain and validator along with other services for moitoring
+2.0 beacon chain and validator along with other services for monitoring
 (Prometheus and Grafana).
 
 The server is connected to a router (with proprietary SW).
@@ -156,7 +156,7 @@ systemctl enable systemd-resolved
 |-----------+---------------+---------------------------+-----------------|
 | staker    | staker, wheel | SSH login, general access | =/home/staker=    |
 | eth1      | eth1          | Ethereum 1 client         | =/home/eth1=      |
-| beacon    | beacon        | Ethereum 2 beacon chain   | =/home/beaon=     |
+| beacon    | beacon        | Ethereum 2 beacon chain   | =/home/beacon=    |
 | validator | validator     | Ethereum 2 validator      | =/home/validator= |
 
 ** SSH service
