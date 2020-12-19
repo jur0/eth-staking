@@ -1,0 +1,683 @@
+#+TITLE: Ethereum 2.0 staking
+#+ROAM_ALIAS: "ETH 2 staking"
+#+CREATED: [2020-12-12 Sat 16:46]
+#+LAST_MODIFIED: [2020-12-19 Sat 12:34]
+
+* Introduction
+
+Steps to install and configure Arch Linux server running Geth, Ethereum
+2.0 beacon chain and validator along with other services for moitoring
+(Prometheus and Grafana).
+
+The server is connected to a router (with proprietary SW).
+
+* Hardware
+
+** Server
+
+Asus PN50 r8 4800U
+32GB DDR4 memory (2x16)
+2TB NVMe M.2 Samsung 970 EVO Plus SSD
+
+In order to update BIOS follow [[https://www.youtube.com/watch?v=D12VP44eyQo][this video]].
+
+** Router
+
+TODO
+
+** UPS
+
+TODO
+
+* Arch Linux installation
+
+Follow [[https://wiki.archlinux.org/index.php/Installation_guide][the installation guide]] and/or watch [[https://www.youtube.com/watch?v=PQgyW10xD8s][this video]].
+
+** Disk partitions
+
+|-------------+--------+----------------------+-------------|
+| mount point | size   | type                 | file system |
+|-------------+--------+----------------------+-------------|
+| =/boot=       | 512MB  | EFI system partition | FAT-32      |
+| =/=           | 10GB   | Linux filesystem     | Ext4        |
+| =/home=       | ~1.8TB | Linux filesystem     | Ext4        |
+|-------------+--------+----------------------+-------------|
+
+=/etc/fstab=:
+
+#+begin_comment
+# /dev/nvme0n1p2 UUID=c9e84601-3828-4133-9820-f939c6fe8289
+/dev/nvme0n1p2      	/         	ext4      	rw,relatime	0 1
+
+# /dev/nvme0n1p1 UUID=3097-5993
+/dev/nvme0n1p1      	/boot     	vfat      	rw,relatime,fmask=0022, ...
+
+# /dev/nvme0n1p3 UUID=35b11765-d2e8-4147-8651-8adbbcb40992
+/dev/nvme0n1p3      	/home     	ext4      	rw,relatime	0 2
+#+end_comment
+
+All partitions are mounted during the installation (in =/mnt=).
+
+** Bootloader installation
+
+#+begin_src shell
+pacman -S grub efibootmgr dosfstools os-prober mtools
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub_uefi --recheck
+#+end_src
+
+Install =amd-ucode= and generate grub configuration:
+
+#+begin_src shell
+pacman -S amd-ucode
+grub-mkconfig -o /boot/grub/grub.cfg
+#+end_src
+
+** Network configuration
+
+Wireless and bluetooth interfaces are disabled in BIOS. There are only
+=loopback= and =enp2s0f0= (wired network interface) available.
+
+=enp2s0f0= is configured to use DHCP, =/etc/systemd/network/wired.netword=:
+
+#+begin_src toml
+[Match]
+Name=enp2s0f0
+
+[Network]
+DHCP=yes
+#+end_src
+
+** Boot log check
+
+Check for any errors/warnings with ~journalctl -kx~:
+
+#+begin_comment
+Dec 13 08:52:15 asus kernel: GPT:Primary header thinks Alt. header is not at the end of the disk.
+Dec 13 08:52:15 asus kernel: GPT:1397399 != 7827391
+Dec 13 08:52:15 asus kernel: GPT:Alternate GPT header not at the end of the disk.
+Dec 13 08:52:15 asus kernel: GPT:1397399 != 7827391
+Dec 13 08:52:15 asus kernel: GPT: Use GNU Parted to correct GPT errors.
+#+end_comment
+
+The above error can be fixed with =gdisk=, enable expert options and
+select =j= command.
+
+** RAM frequency check
+
+Make sure RAM memory runs on the right frequency (there are some issues
+reported with RAM running at lower frequency). Use ~dmidecode -t memory~
+or ~lshw -short -C memory~:
+
+#+begin_comment
+H/W path            Device          Class          Description
+==============================================================
+/0/0                                memory         64KiB BIOS
+/0/30                               memory         32GiB System Memory
+/0/30/0                             memory         16GiB SODIMM DDR4 Synchronous Unbuffered (Unregistered) 3200 MHz (0.3 ns)
+/0/30/1                             memory         16GiB SODIMM DDR4 Synchronous Unbuffered (Unregistered) 3200 MHz (0.3 ns)
+/0/32                               memory         512KiB L1 cache
+/0/33                               memory         4MiB L2 cache
+/0/34                               memory         8MiB L3 cache
+#+end_comment
+
+** Time service
+
+Enable network time synchronisation:
+
+#+begin_src shell
+timedatectl set-ntp true
+#+end_src
+
+Start and enable =systemd-timesyncd.service=:
+
+#+begin_src shell
+systemctl start systemd-timesyncd
+systemctl enable systemd-timesyncd
+#+end_src
+
+Make sure time, timezone and NTP service is active, use:
+
+#+begin_src shell
+timedatectl status
+#+end_src
+
+** DNS service
+
+Start and enable =systemd-resolved.service=:
+
+#+begin_src shell
+systemctl start systemd-resolved
+systemctl enable systemd-resolved
+#+end_src
+
+** Users and groups
+
+| user      | groups        | purpose                   | home directory  |
+|-----------+---------------+---------------------------+-----------------|
+| staker    | staker, wheel | SSH login, general access | =/home/staker=    |
+| eth1      | eth1          | Ethereum 1 client         | =/home/eth1=      |
+| beacon    | beacon        | Ethereum 2 beacon chain   | =/home/beaon=     |
+| validator | validator     | Ethereum 2 validator      | =/home/validator= |
+
+** SSH service
+
+Amend the =/etc/ssh/sshd_config= based on [[https://stribika.github.io/2015/01/04/secure-secure-shell.html][this guide]]:
+
+#+begin_comment
+Port 22000
+AddressFamily any
+ListenAddress 0.0.0.0
+
+# Ciphers and keying
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+#RekeyLimit default none
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
+# The available Key Exchange algorithms
+KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+
+# Logging
+SyslogFacility AUTH
+LogLevel VERBOSE
+
+# Authentication:
+
+AllowUsers staker
+
+Protocol 2
+
+PubkeyAuthentication yes
+
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+
+PermitRootLogin no
+
+#LoginGraceTime 2m
+#StrictModes yes
+MaxAuthTries 6
+MaxSessions 6
+
+# The default is to check both .ssh/authorized_keys and .ssh/authorized_keys2
+# but this is overridden so installations will only check .ssh/authorized_keys
+AuthorizedKeysFile	.ssh/authorized_keys
+
+#AuthorizedPrincipalsFile none
+
+#AuthorizedKeysCommand none
+#AuthorizedKeysCommandUser nobody
+
+# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
+#HostbasedAuthentication no
+# Change to yes if you don't trust ~/.ssh/known_hosts for
+# HostbasedAuthentication
+#IgnoreUserKnownHosts no
+# Don't read the user's ~/.rhosts and ~/.shosts files
+#IgnoreRhosts yes
+
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
+#PermitEmptyPasswords no
+
+# Change to no to disable s/key passwords
+ChallengeResponseAuthentication no
+
+# Kerberos options
+#KerberosAuthentication no
+#KerberosOrLocalPasswd yes
+#KerberosTicketCleanup yes
+#KerberosGetAFSToken no
+
+# GSSAPI options
+GSSAPIAuthentication no
+#GSSAPICleanupCredentials yes
+
+# Set this to 'yes' to enable PAM authentication, account processing,
+# and session processing. If this is enabled, PAM authentication will
+# be allowed through the ChallengeResponseAuthentication and
+# PasswordAuthentication.  Depending on your PAM configuration,
+# PAM authentication via ChallengeResponseAuthentication may bypass
+# the setting of "PermitRootLogin without-password".
+# If you just want the PAM account and session checks to run without
+# PAM authentication, then enable this but set PasswordAuthentication
+# and ChallengeResponseAuthentication to 'no'.
+UsePAM yes
+
+#AllowAgentForwarding yes
+#AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding no
+#X11DisplayOffset 10
+#X11UseLocalhost yes
+#PermitTTY yes
+PrintMotd no # pam does that
+#PrintLastLog yes
+#TCPKeepAlive yes
+#PermitUserEnvironment no
+#Compression delayed
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+#UseDNS no
+#PidFile /run/sshd.pid
+#MaxStartups 10:30:100
+#PermitTunnel no
+#ChrootDirectory none
+#VersionAddendum none
+
+# no default banner path
+#Banner none
+
+# override default of no subsystems
+Subsystem	sftp	/usr/lib/ssh/sftp-server
+
+# Example of overriding settings on a per-user basis
+#Match User anoncvs
+#	X11Forwarding no
+#	AllowTcpForwarding no
+#	PermitTTY no
+#	ForceCommand cvs server
+#+end_comment
+
+The =staker= user is allowed to connect to the SSH server using public key
+authentication. Therefore, the SSH public key of this user must be
+present in =staker='s home directory in =.ssh/authorized_keys= file.
+
+** UPS setup
+
+TODO
+
+** Network speed limiter
+
+TODO
+
+* Router configuration
+
+** DHCP static IP
+
+The server is always assigned =192.168.1.100= address.
+
+** Port forwarding
+
+The router's port forwarding configuration (the destination IP is the
+server's statically assigned IP by DHCP):
+
+| service            | from port | to port | TCP | UDP |
+|--------------------+-----------+---------+-----+-----|
+| SSH server         |     22000 |   22000 | x   |     |
+| Geth client        |     30303 |   30303 | x   | x   |
+| Prysm beacon chain |     12000 |   12000 |     | x   |
+| Prysm beacon chain |     13000 |   13000 | x   |     |
+
+** Dynamic DNS
+
+In case of dynamic public IP address, the router can change its WAN IP
+with each restart. Therefore, it's a good idea to configure DDNS.
+
+** Firewall
+
+TODO
+
+* Ethereum 1.0 client (=geth=)
+
+** Installation
+
+Install the =geth= client using =pacman=:
+
+#+begin_src shell
+pacman -S go-ethereum
+#+end_src
+
+** Configuration
+
+=/home/eth1/mainnet/geth/geth.toml=:
+
+#+begin_src toml
+[Eth]
+NetworkId = 1
+SyncMode = "fast"
+
+[Node]
+DataDir = "/home/eth1/mainnet/geth/data"
+HTTPHost = "127.0.0.1"
+HTTPPort = 8545
+HTTPVirtualHosts = ["localhost"]
+HTTPModules = ["net", "web3", "eth"]
+
+[Node.P2P]
+ListenAddr = ":30303"
+#+end_src
+
+=/usr/lib/systemd/system/geth-mainnet.service=:
+
+#+begin_src toml
+[Unit]
+Description=Mainnet geth client
+Requires=network.target
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=eth1
+Group=eth1
+ExecStart=/usr/bin/geth --cache 2048 --pprof --metrics --config /home/eth1/mainnet/geth/geth.toml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+#+end_src
+
+The =--pprof= and =--metrics= options are needed for Prometheus metrics on
+port 6060.
+
+** Operation
+
+Start and enable the service:
+
+#+begin_src shell
+systemctl start geth-mainnet
+systemctl enable geth-mainnet
+#+end_src
+
+Open ports:
+
+| purpose            |  port | TCP | UDP |
+|--------------------+-------+-----+-----|
+| HTTP API           |  8545 | x   |     |
+| P2P/sync           | 30303 | x   | x   |
+| Prometheus metrics |  6060 | x   |     |
+
+Check open ports with ~ss -tunlp | grep geth~.
+
+Updates are done using =pacman=.
+
+To improve:
+- logs are not in journald format.
+
+* Ethereum 2.0 beacon chain (=prysm=)
+
+** Installation
+
+Install the beacon chain client [[https://docs.prylabs.network/docs/install/install-with-script][using the intallation script]] in
+=/home/beacon/mainnet/prysm-bin=:
+
+#+begin_src shell
+mkdir -p mainnet/prysm-bin && cd mainnet/prysm-bin
+curl https://raw.githubusercontent.com/prysmaticlabs/prysm/master/prysm.sh --output prysm.sh && chmod +x prysm.sh
+#+end_src
+
+NOTE: The above commands don't install the beacon chain client, but when
+the =prysm.sh= script is run for the first time it downloads the
+executable.
+
+** Configuration
+
+=/home/beacon/mainnet/prysm-beacon/beacon.yaml=:
+
+#+begin_src yaml
+datadir: "/home/beacon/mainnet/prysm-beacon/data"
+http-web3provider: "http://127.0.0.1:8545"
+log-format: journald
+mainnet: true
+accept-terms-of-use: true
+#+end_src
+
+=/usr/lib/systemd/system/prysm-beacon-mainnet.service=:
+
+#+begin_src toml
+[Unit]
+Description=Mainnet beacon chain prysm client
+Requires=network.target
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=beacon
+Group=beacon
+ExecStart=/home/beacon/mainnet/prysm-bin/prysm.sh beacon-chain --config-file /home/beacon/mainnet/prysm-beacon/beacon.yaml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+#+end_src
+
+** Operation
+
+Start and enable the service:
+
+#+begin_src shell
+systemctl start prysm-beacon-mainnet
+systemctl enable prysm-beacon-mainnet
+#+end_src
+
+Open ports:
+
+| purpose            |  port | TCP | UDP |
+|--------------------+-------+-----+-----|
+| P2P/sync           | 12000 |     | x   |
+| P2P/sync           | 13000 | x   |     |
+| gRPC gateway       |  3500 | x   |     |
+| RPC API            |  4000 | x   |     |
+| Prometheus metrics |  8080 | x   |     |
+
+Check open ports with ~ss -tunlp | grep beacon~.
+
+Updates are done using the =prysm.sh= script. With each start it checks
+for the latest version. If there is a newer version, the script
+downloads it and runs it. This can be done with:
+
+#+begin_src shell
+systemctl restart prysm-beacon-mainnet
+#+end_src
+
+To improve:
+- add fallback web3 providers;
+- logs are in journald format, but they lack more details;
+- it would be nicer to have a dedicated package for Arch Linux.
+
+* Ethereum 2.0 validator (=prysm=)
+
+** Installation
+
+Install the beacon chain client [[https://docs.prylabs.network/docs/install/install-with-script][using the intallation script]] in
+=/home/validator/mainnet/prysm-bin=:
+
+#+begin_src shell
+mkdir -p mainnet/prysm-bin && cd mainnet/prysm-bin
+curl https://raw.githubusercontent.com/prysmaticlabs/prysm/master/prysm.sh --output prysm.sh && chmod +x prysm.sh
+#+end_src
+
+NOTE: The above commands don't install the validator, but when the
+=prysm.sh= script is run for the first time it downloads the executable.
+
+** Validator keys
+
+TODO
+
+** Configuration
+
+=/home/validator/mainnet/prysm-validator/validator.yaml=:
+
+#+begin_src yaml
+datadir: "/home/validator/mainnet/prysm-validator/data"
+graffiti: "INSERT_GRAFFITI_HERE"
+beacon-rpc-provider: "127.0.0.1:4000"
+wallet-dir: "/home/validator/mainnet/prysm-wallet"
+wallet-password-file: "/home/validator/mainnet/prysm-wallet-password.txt"
+log-format: journald
+mainnet: true
+accept-terms-of-use: true
+#+end_src
+
+=/usr/lib/systemd/system/prysm-validator-mainnet.service=:
+
+#+begin_src toml
+[Unit]
+Description=Mainnet validator prysm client
+Requires=prysm-beacon-mainnet.service
+After=prysm-beacon-mainnet.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=validator
+Group=validator
+ExecStart=/home/validator/mainnet/prysm-bin/prysm.sh validator --config-file /home/validator/mainnet/prysm-validator/validator.yaml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+#+end_src
+
+** Operation
+
+Start and enable the service:
+
+#+begin_src shell
+systemctl start prysm-validator-mainnet
+systemctl enable prysm-validator-mainnet
+#+end_src
+
+Open ports:
+
+| purpose            | port | TCP | UDP |
+|--------------------+------+-----+-----|
+| Prometheus metrics | 8081 | x   |     |
+
+Check open ports with ~ss -tunlp | grep validator~.
+
+Updates are done using the =prysm.sh= script. With each start it checks
+for the latest version. If there is a newer version, the script
+downloads it and runs it. This can be done with:
+
+#+begin_src shell
+systemctl restart prysm-validator-mainnet
+#+end_src
+
+To improve:
+- logs are in journald format, but they lack more details;
+- it would be nicer to have a dedicated package for Arch Linux.
+
+* System monitoring
+
+Follow [[https://github.com/metanull-operator/eth2-grafana][eth2-grafana]] for installation and configuration. There are a few
+differences described below.
+
+** Use =pacman=
+
+Install =prometheus=, =prometheus-blackbox-exporter=,
+=prometheus-node-exporter= and =grafana= using =pacman=:
+
+#+begin_src shell
+pacman -S prometheus prometheus-blackbox-exporter prometheus-node-exporter grafana
+#+end_src
+
+Use the configuration from [[https://github.com/metanull-operator/eth2-grafana][eth2-grafana]], start and enable the services:
+
+#+begin_src shell
+systemctl daemon-reload
+systemctl enable prometheus-node-exporter prometheus-blackbox-exporter prometheus grafana
+systemctl start prometheus-node-exporter prometheus-blackbox-exporter prometheus grafana
+#+end_src
+
+** =json_exporter=
+
+This package is not in the package repository, so we need to build,
+install and configure it manually.
+
+Download and build =json_exporter= (as root in home directory):
+
+#+begin_src shell
+pacman -S make go
+git clone https://github.com/prometheus-community/json_exporter
+cd json_exporter && make build
+#+end_src
+
+Create =json_exporter= group and user:
+
+#+begin_src shell
+groupadd -r json_exporter
+useradd -r -d / -s /usr/bin/nologin -M -g json_exporter -M json_exporter
+#+end_src
+
+Copy the =json_exporter= binary into =/usr/bin=:
+
+#+begin_src shell
+cp json_exporter /usr/bin/prometheus-json-exporter
+#+end_src
+
+Copy the following configuration into =/etc/prometheus/json-exporter.yml=:
+
+#+begin_src yaml
+metrics:
+- name: ethusd
+  path: $.ethereum.usd
+  help: Ethereum (ETH) price in USD
+#+end_src
+
+Add the following systemd config into
+=/usr/lib/systemd/system/prometheus-json-exporter.service=:
+
+#+begin_src toml
+[Unit]
+Description=Prometheus JSON Exporter
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=json_exporter
+Group=json_exporter
+ExecStart=/usr/bin/prometheus-json-exporter --config.file=/etc/prometheus/json-exporter.yml
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+#+end_src
+
+Start and enable the service:
+
+#+begin_src shell
+systemctl daemon-reload
+systemctl start prometheus-json-exporter
+systemctl enable prometheus-json-exporter
+#+end_src
+
+** Open ports
+
+| service                      | port | TCP | UDP |
+|------------------------------+------+-----+-----|
+| =prometheus=                   | 9090 | x   |     |
+| =prometheus-blackbox-exporter= | 9115 | x   |     |
+| =prometheus-node-exporter=     | 9100 | x   |     |
+| =prometheus-json-exporter=     | 7979 | x   |     |
+| =grafana-server=               | 3000 | x   |     |
+
+** Grafana dashboard for =geth=
+
+The configuration for Prometheus has to contain:
+
+#+begin_src yaml
+- job_name: 'geth node'
+  scrape_interval: 5s
+  metrics_path: /debug/metrics/prometheus
+  static_configs:
+  - targets: ['127.0.0.1:6060']
+#+end_src
+
+Import dashboard for =geth= from [[https://gist.githubusercontent.com/karalabe/e7ca79abdec54755ceae09c08bd090cd/raw/3a400ab90f9402f2233280afd086cb9d6aac2111/dashboard.json][here]].
+
+** Grafana dashboard for detailed HW monitoring
+
+Import another dashboard from [[https://github.com/rfrail3/grafana-dashboards][here]]. It enables very detailed HW
+monitoring.
+
+** Grafana dashboard for logs
+
+TODO
+
+** Grafana alerts
