@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-19 Sat 21:27]
+#+LAST_MODIFIED: [2020-12-23 Wed 18:22]
 
 * Introduction
 
@@ -417,7 +417,7 @@ executable.
 #+begin_src yaml
 datadir: "/home/beacon/mainnet/prysm-beacon/data"
 http-web3provider: "http://127.0.0.1:8545"
-log-format: journald
+log-format: text
 mainnet: true
 accept-terms-of-use: true
 #+end_src
@@ -474,7 +474,7 @@ systemctl restart prysm-beacon-mainnet
 
 To improve:
 - add fallback web3 providers;
-- logs are in journald format, but they lack more details;
+- logs in =journald= format lack more details (using =text= instead);
 - it would be nicer to have a dedicated package for Arch Linux.
 
 * Ethereum 2.0 validator (=prysm=)
@@ -547,7 +547,7 @@ graffiti: "INSERT_GRAFFITI_HERE"
 beacon-rpc-provider: "127.0.0.1:4000"
 wallet-dir: "/home/validator/mainnet/prysm-wallet"
 wallet-password-file: "/home/validator/mainnet/prysm-wallet-password.txt"
-log-format: journald
+log-format: text
 mainnet: true
 accept-terms-of-use: true
 #+end_src
@@ -599,7 +599,7 @@ systemctl restart prysm-validator-mainnet
 #+end_src
 
 To improve:
-- logs are in journald format, but they lack more details;
+- logs in =journald= format lack more details (using =text= instead);
 - it would be nicer to have a dedicated package for Arch Linux.
 
 * System monitoring
