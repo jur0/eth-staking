@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-23 Wed 20:14]
+#+LAST_MODIFIED: [2020-12-23 Wed 20:24]
 
 * Introduction
 
@@ -19,7 +19,8 @@ The server is connected to a router (with proprietary SW).
 | 32GB DDR4 memory (2x16)               |
 | 2TB NVMe M.2 Samsung 970 EVO Plus SSD |
 
-In order to update BIOS follow [[https://www.youtube.com/watch?v=D12VP44eyQo][this video]].
+In order to update BIOS, follow [[https://www.youtube.com/watch?v=D12VP44eyQo][this video]]. Also, configure the server
+to boot on AC power (APM settings).
 
 | router          |
 |-----------------|
@@ -283,9 +284,12 @@ The =staker= user is allowed to connect to the SSH server using public key
 authentication. Therefore, the SSH public key of this user must be
 present in =staker='s home directory in =.ssh/authorized_keys= file.
 
-** UPS setup
+** UPS service
 
-TODO
+This service communicates with UPS. If there is a power failure, the UPS
+sends a signal to the server once it starts running on batteries. It can
+also instruct the server to shut down in case there is low power in
+UPS's batteries. Follow [[https://wiki.archlinux.org/index.php/APC_UPS][this guide]] to configure =apcupsd= service.
 
 ** Network speed limiter
 
