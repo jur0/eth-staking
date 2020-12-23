@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-23 Wed 18:22]
+#+LAST_MODIFIED: [2020-12-23 Wed 20:14]
 
 * Introduction
 
@@ -13,21 +13,23 @@ The server is connected to a router (with proprietary SW).
 
 * Hardware
 
-** Server
-
-- Asus PN50 r8 4800U
-- 32GB DDR4 memory (2x16)
-- 2TB NVMe M.2 Samsung 970 EVO Plus SSD
+| server                                |
+|---------------------------------------|
+| Asus PN50 r8 4800U                    |
+| 32GB DDR4 memory (2x16)               |
+| 2TB NVMe M.2 Samsung 970 EVO Plus SSD |
 
 In order to update BIOS follow [[https://www.youtube.com/watch?v=D12VP44eyQo][this video]].
 
-** Router
+| router          |
+|-----------------|
+| Huawei HG8145V5 |
 
-TODO
+The router uses its own proprietary system.
 
-** UPS
-
-TODO
+| UPS              |
+|------------------|
+| APC Back-UPS Pro |
 
 * Arch Linux installation
 
