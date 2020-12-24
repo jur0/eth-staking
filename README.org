@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-24 Thu 14:57]
+#+LAST_MODIFIED: [2020-12-24 Thu 15:08]
 
 * Introduction
 
@@ -340,6 +340,7 @@ pacman -S go-ethereum
 [Eth]
 NetworkId = 1
 SyncMode = "fast"
+LightPeers = 20
 
 [Node]
 DataDir = "/home/eth1/mainnet/geth/data"
@@ -350,7 +351,11 @@ HTTPModules = ["net", "web3", "eth"]
 
 [Node.P2P]
 ListenAddr = ":30303"
+MaxPeers = 20
 #+end_src
+
+Note that =LightPeers= and =MaxPeers= are both reduced to 20. It's in order
+to limit network traffic after the node is synced.
 
 =/usr/lib/systemd/system/geth-mainnet.service=:
 
