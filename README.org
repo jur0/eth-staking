@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-23 Wed 20:52]
+#+LAST_MODIFIED: [2020-12-24 Thu 14:57]
 
 * Introduction
 
@@ -423,10 +423,17 @@ executable.
 #+begin_src yaml
 datadir: "/home/beacon/mainnet/prysm-beacon/data"
 http-web3provider: "http://127.0.0.1:8545"
+fallback-web3provider:
+- "https://mainnet.infura.io/..."
+- "https://eth-mainnet.alchemyapi.io/..."
 log-format: text
 mainnet: true
 accept-terms-of-use: true
 #+end_src
+
+Note that after the primary API provider goes down, there are a couple
+of fallback API providers. If the primary provider goes up again, it
+will be switched to it automatically.
 
 =/usr/lib/systemd/system/prysm-beacon-mainnet.service=:
 
