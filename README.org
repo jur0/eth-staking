@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-24 Thu 15:08]
+#+LAST_MODIFIED: [2020-12-25 Fri 20:36]
 
 * Introduction
 
@@ -317,6 +317,8 @@ server's statically assigned IP by DHCP):
 
 In case of dynamic public IP address, the router can change its WAN IP
 with each restart. Therefore, it's a good idea to configure DDNS.
+
+For example, use [[https://www.dynu.com/][dynu.com]] and configure the router following [[https://www.dynu.com/DynamicDNS/IPUpdateClient/HUAWEI-HG8245-HG8346M-HG8045H][this guide]].
 
 ** Firewall
 
