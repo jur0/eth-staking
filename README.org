@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2020-12-25 Fri 20:36]
+#+LAST_MODIFIED: [2020-12-26 Sat 21:15]
 
 * Introduction
 
@@ -41,9 +41,9 @@ Follow [[https://wiki.archlinux.org/index.php/Installation_guide][the installati
 |-------------+--------+----------------------+-------------|
 | mount point | size   | type                 | file system |
 |-------------+--------+----------------------+-------------|
-| =/boot=       | 512MB  | EFI system partition | FAT-32      |
-| =/=           | 10GB   | Linux filesystem     | Ext4        |
-| =/home=       | ~1.8TB | Linux filesystem     | Ext4        |
+| =/boot=     | 512MB  | EFI system partition | FAT-32      |
+| =/=         | 10GB   | Linux filesystem     | Ext4        |
+| =/home=     | ~1.8TB | Linux filesystem     | Ext4        |
 |-------------+--------+----------------------+-------------|
 
 =/etc/fstab=:
@@ -155,12 +155,12 @@ systemctl enable systemd-resolved
 
 ** Users and groups
 
-| user      | groups        | purpose                   | home directory  |
-|-----------+---------------+---------------------------+-----------------|
-| staker    | staker, wheel | SSH login, general access | =/home/staker=    |
-| eth1      | eth1          | Ethereum 1 client         | =/home/eth1=      |
-| beacon    | beacon        | Ethereum 2 beacon chain   | =/home/beacon=    |
-| validator | validator     | Ethereum 2 validator      | =/home/validator= |
+| user        | groups            | purpose                   | home directory    |
+|-------------+-------------------+---------------------------+-------------------|
+| =staker=    | =staker=, =wheel= | SSH login, general access | =/home/staker=    |
+| =eth1=      | =eth1=            | Ethereum 1 client         | =/home/eth1=      |
+| =beacon=    | =beacon=          | Ethereum 2 beacon chain   | =/home/beacon=    |
+| =validator= | =validator=       | Ethereum 2 validator      | =/home/validator= |
 
 ** SSH service
 
@@ -712,8 +712,8 @@ systemctl enable prometheus-json-exporter
 
 ** Open ports
 
-| service                      | port | TCP | UDP |
-|------------------------------+------+-----+-----|
+| service                        | port | TCP | UDP |
+|--------------------------------+------+-----+-----|
 | =prometheus=                   | 9090 | x   |     |
 | =prometheus-blackbox-exporter= | 9115 | x   |     |
 | =prometheus-node-exporter=     | 9100 | x   |     |
