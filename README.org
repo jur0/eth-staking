@@ -650,10 +650,12 @@ To improve:
 
 * System monitoring
 
+** Grafana ETH 2 dashboard
+
 Follow [[https://github.com/metanull-operator/eth2-grafana][eth2-grafana]] for installation and configuration. There are a few
 differences described below.
 
-** Use =pacman=
+*** Use =pacman=
 
 Install =prometheus=, =prometheus-blackbox-exporter=,
 =prometheus-node-exporter= and =grafana= using =pacman=:
@@ -670,7 +672,7 @@ systemctl enable prometheus-node-exporter prometheus-blackbox-exporter prometheu
 systemctl start prometheus-node-exporter prometheus-blackbox-exporter prometheus grafana
 #+end_src
 
-** =json_exporter=
+*** =json_exporter=
 
 This package is not in the package repository, so we need to build,
 install and configure it manually.
@@ -734,17 +736,7 @@ systemctl start prometheus-json-exporter
 systemctl enable prometheus-json-exporter
 #+end_src
 
-** Open ports
-
-| service                        | port | TCP | UDP |
-|--------------------------------+------+-----+-----|
-| =prometheus=                   | 9090 | x   |     |
-| =prometheus-blackbox-exporter= | 9115 | x   |     |
-| =prometheus-node-exporter=     | 9100 | x   |     |
-| =prometheus-json-exporter=     | 7979 | x   |     |
-| =grafana-server=               | 3000 | x   |     |
-
-** Grafana dashboard for =geth=
+** Grafana ETH 1 dashboard
 
 The configuration for Prometheus has to contain:
 
@@ -758,13 +750,67 @@ The configuration for Prometheus has to contain:
 
 Import dashboard for =geth= from [[https://gist.githubusercontent.com/karalabe/e7ca79abdec54755ceae09c08bd090cd/raw/3a400ab90f9402f2233280afd086cb9d6aac2111/dashboard.json][here]].
 
-** Grafana dashboard for detailed HW monitoring
+** Grafana HW information dashboard
 
 Import another dashboard from [[https://github.com/rfrail3/grafana-dashboards][here]]. It enables very detailed HW
 monitoring.
 
-** Grafana dashboard for logs
+** Grafana system logs
+
+In order to view system logs in Grafana, the =loki= and =promtail= must
+be installed:
+
+#+begin_src shell
+pacman -S loki promtail
+#+end_src
+
+The configuration for =promtail= (=/etc/loki/promtail.yaml=) must
+include journal logs (not the default one):
+
+#+begin_src yaml
+scrape_configs:
+  - job_name: journal
+    journal:
+      json: false
+      max_age: 12h
+      path: /var/log/journal
+      labels:
+        job: systemd-journal
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+#+end_src
+
+The configuration for =loki= is unchanged.
+
+Both services must be started and enabled:
+
+#+begin_src shell
+systemctl daemon-reload
+systemctl start promtail
+systemctl enable promtail
+systemctl start loki
+systemctl enable loki
+#+end_src
+
+The =loki= service works as a datasource for Grafana and it is added in
+Grafana's UI (=http://localhost:3100=). The system logs are accessible
+through "Explore", where datasource is "Loki".
+
+** Open ports related to Grafana
+
+| service                        |  port | TCP | UDP |
+|--------------------------------+-------+-----+-----|
+| =prometheus=                   |  9090 | x   |     |
+| =prometheus-blackbox-exporter= |  9115 | x   |     |
+| =prometheus-node-exporter=     |  9100 | x   |     |
+| =prometheus-json-exporter=     |  7979 | x   |     |
+| =grafana-server=               |  3000 | x   |     |
+| =promtail= HTTP                |  9080 | x   |     |
+| =promtail= ?                   | 39603 | x   |     |
+| =loki= HTTP                    |  3100 | x   |     |
+| =loki= gRPC                    |  9095 | x   |     |
+
+** Grafana alerts to Telegram
 
 TODO
-
-** Grafana alerts
