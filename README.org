@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2021-01-04 Mon 20:39]
+#+LAST_MODIFIED: [2021-01-04 Mon 21:40]
 
 * Introduction
 
@@ -547,7 +547,14 @@ needed):
 #+end_src
 
 Set the wallet's path to be =/home/validator/mainnnet/prysm-wallet=. The
-wallet has its own password.
+wallet has its own password, which is store in plaintext in
+=/home/validator/mainnet/prysm-wallet-password.txt=. Make sure both the
+wallet directory and the password file have the right permissions set:
+
+#+begin_src shell
+chmod -R 700 prysm-wallet
+chmod -R 600 prysm-wallet-password.txt
+#+end_src
 
 It's also possible to import additional keys:
 
