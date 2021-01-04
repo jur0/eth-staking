@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2021-01-04 Mon 22:23]
+#+LAST_MODIFIED: [2021-01-04 Mon 22:32]
 
 * Introduction
 
@@ -818,3 +818,37 @@ TODO
 ** Prysm validator web interface
 
 The validator has its own web interface running on port 7500.
+
+* Remote access
+
+SSH client is configured as follows (=.ssh/config=):
+
+#+begin_src example
+Host *
+    # Send "ping" each 60s if inactive
+    ServerAliveInterval 60
+    VisualHostKey yes
+    # TCP connection multiplexing
+    ControlMaster auto
+    ControlPath ~/.ssh/multiplex/%r@%h:%p
+    ControlPersist 1
+
+Host ethserver
+    HostName YOUR_IP/DOMAIN
+    User staker
+    Port 22000
+    # Grafana
+    LocalForward 3000 localhost:3000
+    # Prysm validator web
+    LocalForward 7500 localhost:7500
+    # Prysm beacon chain gRPC
+    LocalForward 3500 localhost:3500
+    # Prysm beacon chain Prometheus metrics
+    LocalForward 8080 localhost:8080
+    # Prysm validator Prometheus metrics
+    LocalForward 8081 localhost:8081
+#+end_src
+
+After connecting to the server using ~ssh ethserver~, a browser can
+access Grafana (=http://localhost:3000=) and Prysm validator web
+interface (=http://localhost:7500=).
