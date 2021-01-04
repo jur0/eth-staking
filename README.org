@@ -1,7 +1,7 @@
 #+TITLE: Ethereum 2.0 staking
 #+ROAM_ALIAS: "ETH 2 staking"
 #+CREATED: [2020-12-12 Sat 16:46]
-#+LAST_MODIFIED: [2021-01-04 Mon 21:40]
+#+LAST_MODIFIED: [2021-01-04 Mon 22:23]
 
 * Introduction
 
@@ -814,3 +814,7 @@ through "Explore", where datasource is "Loki".
 ** Grafana alerts to Telegram
 
 TODO
+
+** Prysm validator web interface
+
+The validator has its own web interface running on port 7500.
