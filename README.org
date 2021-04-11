@@ -402,7 +402,7 @@ Open ports:
 
 Check open ports with ~ss -tunlp | grep geth~.
 
-Updates are done using =pacman=.
+Updates are done using =pacman -Syu= and rebooting the server.
 
 To improve:
 - logs are not in journald format.
