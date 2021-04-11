@@ -672,6 +672,11 @@ systemctl enable prometheus-node-exporter prometheus-blackbox-exporter prometheu
 systemctl start prometheus-node-exporter prometheus-blackbox-exporter prometheus grafana
 #+end_src
 
+[2021-04-11 Sun] There is an [[https://github.com/prometheus/node_exporter/issues/1892#issuecomment-751815783][issue]] with =prometheus-node-exporter=. It's
+fixed by adding =--no-collector.rapl= into
+=/usr/lib/systemd/system/prometheus-node-exporter.service=
+(=ExecStart=).
+
 *** =json_exporter=
 
 This package is not in the package repository, so we need to build,
