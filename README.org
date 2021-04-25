@@ -486,10 +486,15 @@ Check open ports with ~ss -tunlp | grep beacon~.
 
 Updates are done using the =prysm.sh= script. With each start it checks
 for the latest version. If there is a newer version, the script
-downloads it and runs it. This can be done with:
+downloads it and runs it. Both the =prysm-validator-mainnet.service= and
+=prysm-beacon-mainnet.service= should be updated at the same time. This
+can be done with:
 
 #+begin_src shell
-systemctl restart prysm-beacon-mainnet
+systemctl stop prysm-validator-mainnet.service prysm-beacon-mainnet.service
+systemctl daemon-reload
+systemctl start prysm-beacon-mainnet.service
+systemctl start prysm-validator-mainnet.service
 #+end_src
 
 To improve:
@@ -638,13 +643,8 @@ interface.
 
 Check open ports with ~ss -tunlp | grep validator~.
 
-Updates are done using the =prysm.sh= script. With each start it checks
-for the latest version. If there is a newer version, the script
-downloads it and runs it. This can be done with:
-
-#+begin_src shell
-systemctl restart prysm-validator-mainnet
-#+end_src
+Check the section about the beacon chain to find out how to proceed with
+the update.
 
 To improve:
 - logs in =journald= format lack more details (using =text= instead);
