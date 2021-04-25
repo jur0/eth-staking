@@ -593,7 +593,7 @@ wallet-dir: "/home/validator/mainnet/prysm-wallet"
 wallet-password-file: "/home/validator/mainnet/prysm-wallet-password.txt"
 log-format: text
 mainnet: true
-web: true
+web: false
 accept-terms-of-use: true
 #+end_src
 
@@ -631,8 +631,10 @@ Open ports:
 
 | purpose            | port | TCP | UDP |
 |--------------------+------+-----+-----|
-| Web interface      | 7500 | x   |     |
 | Prometheus metrics | 8081 | x   |     |
+
+Note that when ~web: true~ the port 7500 is open to access web
+interface.
 
 Check open ports with ~ss -tunlp | grep validator~.
 
@@ -823,6 +825,7 @@ TODO
 ** Prysm validator web interface
 
 The validator has its own web interface running on port 7500.
+Although, it's disabled at the moment (not very useful).
 
 * Remote access
 
